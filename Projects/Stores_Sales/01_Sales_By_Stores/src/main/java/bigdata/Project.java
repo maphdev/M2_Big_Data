@@ -2,6 +2,7 @@ package bigdata;
 import java.io.IOException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
@@ -14,18 +15,38 @@ import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 public class Project {
   public static class ProjectMapper
-       extends Mapper<Object, Text, Text, IntWritable>{
+       extends Mapper<Object, Text, Text, DoubleWritable>{
 	  public void map(Object key, Text value, Context context
 			  ) throws IOException, InterruptedException {
-		  //context.write(key, value);
+		  String line = value.toString();
+		  String[] tokens = line.split("\t");
+		  if(tokens.length == 6){
+			  String store = tokens[2];
+			  double sale = Float.parseFloat(tokens[4]);
+			  context.write(new Text(store), new DoubleWritable(sale));
+		  }
 	  }
   }
   public static class ProjectReducer
-       extends Reducer<Text,IntWritable,Text,IntWritable> {
-    public void reduce(Text key, Iterable<IntWritable> values,
+       extends Reducer<Text,DoubleWritable,Text,DoubleWritable> {
+    public void reduce(Text key, Iterable<DoubleWritable> values,
                        Context context
                        ) throws IOException, InterruptedException {
-      //context.write(key, value);
+    	String oldStore = "";
+    	double totalSales = 0;
+    	for(DoubleWritable value: values){
+    		String thisStore = key.toString();
+    		double thisSale = Float.parseFloat(value.toString());
+    		if(!oldStore.equals("") && !oldStore.equals(thisStore)){
+    			context.write(new Text(oldStore), new DoubleWritable(totalSales));
+    			totalSales = 0;
+    		}
+    		oldStore = thisStore;
+    		totalSales += thisSale;
+    	}
+    	if(!oldStore.equals("")){
+			context.write(new Text(oldStore), new DoubleWritable(totalSales));
+    	}
     }
   }
   public static void main(String[] args) throws Exception {
@@ -35,10 +56,10 @@ public class Project {
     job.setJarByClass(Project.class);
     job.setMapperClass(ProjectMapper.class);
     job.setMapOutputKeyClass(Text.class);
-    job.setMapOutputValueClass(IntWritable.class);
+    job.setMapOutputValueClass(DoubleWritable.class);
     job.setReducerClass(ProjectReducer.class);
     job.setOutputKeyClass(Text.class);
-    job.setOutputValueClass(IntWritable.class);
+    job.setOutputValueClass(DoubleWritable.class);
     job.setOutputFormatClass(TextOutputFormat.class);
     job.setInputFormatClass(TextInputFormat.class);
     FileInputFormat.addInputPath(job, new Path(args[0]));
