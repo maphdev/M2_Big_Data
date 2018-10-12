@@ -32,20 +32,10 @@ public class Project {
                        Context context
                        ) throws IOException, InterruptedException {
     	double totalSales = 0;
-		String oldItem = "";
     	for(DoubleWritable value: values){
-    		String thisItem = key.toString();
-    		double thisSale = Double.parseDouble(value.toString());
-    		if(!oldItem.equals("") && !oldItem.equals(thisItem)){
-    			context.write(new Text(oldItem), new DoubleWritable(totalSales));
-    			totalSales = 0;
-    		}    
-    		oldItem = thisItem;
-    		totalSales += thisSale;
+    		totalSales += Double.parseDouble(value.toString());
     	}
-    	if(!oldItem.equals("")){
-			context.write(new Text(oldItem), new DoubleWritable(totalSales));
-    	}
+    	context.write(key, new DoubleWritable(totalSales));
     }
   }
   public static void main(String[] args) throws Exception {

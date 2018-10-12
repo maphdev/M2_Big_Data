@@ -32,24 +32,15 @@ public class Project {
     public void reduce(Text key, Iterable<DoubleWritable> values,
                        Context context
                        ) throws IOException, InterruptedException {
-      //context.write(key, value);
-    	String oldStore = "";
+    	
     	double highestSale = 0;
     	for(DoubleWritable value: values){
-    		String thisStore = key.toString();
     		double thisSale = Double.parseDouble(value.toString());
-    		if(!oldStore.equals("") && !oldStore.equals(thisStore)){
-    			context.write(new Text(oldStore), new DoubleWritable(highestSale));
-        		highestSale = 0;
-    		}
     		if(thisSale > highestSale){
     			highestSale = thisSale;
     		}
-    		oldStore = thisStore;
     	}
-    	if(!oldStore.equals("")){
-			context.write(new Text(oldStore), new DoubleWritable(highestSale));
-    	}
+    	context.write(key, new DoubleWritable(highestSale));
     }
   }
   public static void main(String[] args) throws Exception {

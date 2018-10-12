@@ -33,20 +33,11 @@ public class Project {
     public void reduce(Text key, Iterable<IntWritable> values,
                        Context context
                        ) throws IOException, InterruptedException {
-    	String oldPath = "";
     	int nbHits = 0;
     	for(IntWritable value: values){
-    		String thisPath = key.toString();
-    		if(!oldPath.equals("") && !oldPath.equals(thisPath)){
-    			context.write(new Text(oldPath), new IntWritable(nbHits));
-    			nbHits = 0;
-    		}
-    		oldPath = thisPath;
-    		nbHits+=1;
+    		nbHits +=1;
     	}
-    	if(!oldPath.equals("")){
-			context.write(new Text(oldPath), new IntWritable(nbHits));
-    	}
+		context.write(key, new IntWritable(nbHits));
     }
   }
   public static void main(String[] args) throws Exception {

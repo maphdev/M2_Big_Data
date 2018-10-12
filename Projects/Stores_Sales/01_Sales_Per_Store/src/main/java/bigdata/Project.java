@@ -32,21 +32,11 @@ public class Project {
     public void reduce(Text key, Iterable<DoubleWritable> values,
                        Context context
                        ) throws IOException, InterruptedException {
-    	String oldStore = "";
     	double totalSales = 0;
     	for(DoubleWritable value: values){
-    		String thisStore = key.toString();
-    		double thisSale = Float.parseFloat(value.toString());
-    		if(!oldStore.equals("") && !oldStore.equals(thisStore)){
-    			context.write(new Text(oldStore), new DoubleWritable(totalSales));
-    			totalSales = 0;
-    		}
-    		oldStore = thisStore;
-    		totalSales += thisSale;
+    		totalSales += Double.parseDouble(value.toString());
     	}
-    	if(!oldStore.equals("")){
-			context.write(new Text(oldStore), new DoubleWritable(totalSales));
-    	}
+    	context.write(key,  new DoubleWritable(totalSales));
     }
   }
   public static void main(String[] args) throws Exception {
