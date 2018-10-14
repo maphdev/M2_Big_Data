@@ -21,7 +21,7 @@ public class Project {
 				String population = tokens[4];
 				int log = (int) Math.log10(Double.parseDouble(population));
 				int eq_class = (int) Math.pow((double) 10, (double) log);
-				context.write(new IntWritable(eq_class), new IntWritable(Integer.parseInt(population)));
+				context.write(new IntWritable(eq_class), new IntWritable(1));
 			}
 		}
 	}
@@ -30,7 +30,7 @@ public class Project {
 		public void reduce(IntWritable key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
 			int nbCities = 0;
 	    	for(IntWritable value: values){
-	    		nbCities += 1;
+	    		nbCities += value.get();
 	    	}
 	    	context.write(key, new IntWritable(nbCities));
 		}
