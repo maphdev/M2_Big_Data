@@ -37,12 +37,16 @@ public class Project {
 		public void reduce(IntWritable key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
 			int nbCities = 0;
 			int sumPop = 0;
-			int min = key.get()*10-1;
-			int max = key.get();
+			int min = -1;
+			int max = -1;
 	    	for(IntWritable value: values){
 	    		nbCities += 1;
 	    		int population = value.get();
 	    		sumPop += population;
+	    		if(min == -1 || max == -1){
+	    			min = population;
+	    			max = population;
+	    		}
 	    		if(population < min){
 	    			min = population;
 	    		}
