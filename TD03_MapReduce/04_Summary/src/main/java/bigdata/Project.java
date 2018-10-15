@@ -26,13 +26,8 @@ public class Project {
 			}
 		}
 	}
-  
+
 	public static class ProjectReducer extends Reducer<IntWritable,IntWritable,IntWritable,Text> {
-				
-		/*@Override
-		public void setup(Context context) throws IOException, InterruptedException {
-		}*/
-		
 		@Override
 		public void reduce(IntWritable key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
 			int nbCities = 0;
@@ -55,12 +50,12 @@ public class Project {
 	    		}
 	    	}
 	    	double avg = (double)sumPop/(double)nbCities;
-	    	
+
 	    	String summary = nbCities + "\t" + avg + "\t" + max + "\t" + min;
 	    	context.write(key, new Text(summary));
 		}
 	}
-	
+
 	public static void main(String[] args) throws Exception {
 	    Configuration conf = new Configuration();
 		Job job = Job.getInstance(conf, "Project");
