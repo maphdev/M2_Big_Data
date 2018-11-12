@@ -11,7 +11,7 @@ public class CityWritable implements Writable {
 	public String city;
 	public String accentCity;
 	public String region;
-	public int population;
+	public int population = 0;
 	public String latitude;
 	public String longitude;
 	
@@ -50,17 +50,17 @@ public class CityWritable implements Writable {
 	public String toString(){
 		StringBuilder strBd = new StringBuilder();
 		strBd.append(country);
-		strBd.append(" ");
+		strBd.append(", ");
 		strBd.append(city);
-		strBd.append(" ");
+		strBd.append(", ");
 		strBd.append(accentCity);
-		strBd.append(" ");
+		strBd.append(", ");
 		strBd.append(region);
-		strBd.append(" ");
+		strBd.append(", ");
 		strBd.append(population);
-		strBd.append(" ");
+		strBd.append(", ");
 		strBd.append(latitude);
-		strBd.append(" ");
+		strBd.append(", ");
 		strBd.append(longitude);
 		return strBd.toString();
 	}

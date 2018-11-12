@@ -6,6 +6,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.SequenceFile.CompressionType;
+import org.apache.hadoop.io.compress.SnappyCodec;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
@@ -26,15 +28,15 @@ public class Project {
     // Mapper
     job1.setMapperClass(FilterMapper.class);
     job1.setMapOutputKeyClass(Text.class);
-    job1.setMapOutputValueClass(IntWritable.class);
+    job1.setMapOutputValueClass(CityWritable.class);
     
     // Combiner
     job1.setCombinerClass(FilterCombiner.class);
     
     // Reducer
     job1.setReducerClass(FilterReducer.class);
-    job1.setOutputKeyClass(Text.class);
-    job1.setOutputValueClass(IntWritable.class);
+    job1.setOutputKeyClass(NullWritable.class);
+    job1.setOutputValueClass(CityWritable.class);
     
     // Format
     job1.setInputFormatClass(TextInputFormat.class);
@@ -43,6 +45,11 @@ public class Project {
     FileInputFormat.addInputPath(job1, new Path(args[0]));
     FileOutputFormat.setOutputPath(job1, new Path("first_job_output"));
     
+    // Compression
+    FileOutputFormat.setCompressOutput(job1, true);
+    FileOutputFormat.setOutputCompressorClass(job1, SnappyCodec.class);
+    SequenceFileOutputFormat.setOutputCompressionType(job1, CompressionType.BLOCK);
+
     job1.waitForCompletion(true);
     
     // Job 2 : Top K
@@ -64,7 +71,7 @@ public class Project {
     // Reducer
     job2.setReducerClass(TopKReducer.class);
     job2.setOutputKeyClass(NullWritable.class);
-    job2.setOutputValueClass(CityWritable.class);
+    job2.setOutputValueClass(Text.class);
     
     // Format
     job2.setInputFormatClass(SequenceFileInputFormat.class);

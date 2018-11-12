@@ -20,7 +20,6 @@ public class TopKReducer extends Reducer<NullWritable, CityWritable, NullWritabl
 		  k = conf.getInt("k", 10);
 	}
 	
-	
 	@Override
 	public void reduce(NullWritable key, Iterable<CityWritable> values, Context context) throws IOException, InterruptedException {
 		for (CityWritable c : values){
@@ -34,6 +33,7 @@ public class TopKReducer extends Reducer<NullWritable, CityWritable, NullWritabl
 	
 	@Override
 	protected void cleanup(Context context) throws IOException, InterruptedException {
+		context.write(NullWritable.get(), new Text("country, city, accent city, region, population, latitude, longitude"));
 		for (CityWritable c : treeMap.descendingMap().values()){
 			context.write(NullWritable.get(), new Text(c.toString()));
 		}

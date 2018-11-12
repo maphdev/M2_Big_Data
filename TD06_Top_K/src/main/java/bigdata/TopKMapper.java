@@ -9,7 +9,7 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
-public class TopKMapper extends Mapper<Text, IntWritable, NullWritable, CityWritable>{
+public class TopKMapper extends Mapper<NullWritable, CityWritable, NullWritable, CityWritable>{
 	
 	public int k = 0;
 
@@ -22,8 +22,8 @@ public class TopKMapper extends Mapper<Text, IntWritable, NullWritable, CityWrit
 	}
 	
 	@Override
-	public void map(Text key, IntWritable value, Context context) throws IOException, InterruptedException {
-		treeMap.put(value.get(), new CityWritable("ok", key.toString(), "null", "null", value.get(), "null", "null"));
+	public void map(NullWritable key, CityWritable value, Context context) throws IOException, InterruptedException {
+		treeMap.put(value.population, value.clone());
 		
 		if(treeMap.size() > k){
 			treeMap.remove(treeMap.firstKey());
