@@ -1,16 +1,12 @@
 package bigdata;
-import java.io.IOException;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.SortedMapWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
@@ -19,68 +15,10 @@ import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 public class Project {
-	// Map-reduce first job : filter
-	public static class FilterMapper extends Mapper<Object, Text, Text, IntWritable>{
-		public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
-			String line = value.toString();
-			String[] tokens = line.split(",");
-			if(StringUtils.isNumeric(tokens[4]) && !tokens[4].equals("") && !tokens[4].equals("Population") && !tokens[2].equals("")){
-				context.write(new Text(tokens[2]), new IntWritable(Integer.parseInt(tokens[4])));
-			}
-		}
-	}
-	
-	public static class FilterCombiner extends Reducer<Text,IntWritable,Text,IntWritable> {
-		public void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
-    	
-			int max = -1;
-			for (IntWritable value: values){
-				int population = value.get();
-				if (population > max){
-					max = population;
-				}
-			}
-			context.write(key, new IntWritable(max));
-		}
-	}
-	
-	public static class FilterReducer extends Reducer<Text,IntWritable,Text,IntWritable> {
-		public void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
-    	
-			int max = -1;
-			for (IntWritable value: values){
-				int population = value.get();
-				if (population > max){
-					max = population;
-				}
-			}
-			context.write(key, new IntWritable(max));
-		}
-	}
-  
-	// Map-reduce second job : Top K
-	public static class TopKMapper extends Mapper<Text, IntWritable, Text, IntWritable>{
-		@Override
-		public void map(Text key, IntWritable value, Context context) throws IOException, InterruptedException {
-			// some code
-			context.write(key, value);
-		}
-	}
-	
-	public static class TopKReducer extends Reducer<Text,IntWritable,Text,IntWritable> {
-		@Override
-		public void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
-			for (IntWritable value: values){
-				context.write(key, value);
-			}
-		}
-	}
-
   public static void main(String[] args) throws Exception { 
     // Job 1 : filter
 	Configuration conf1 = new Configuration();
 
-   
     Job job1 = Job.getInstance(conf1, "Project");
     job1.setNumReduceTasks(1);
     job1.setJarByClass(Project.class);
@@ -110,6 +48,9 @@ public class Project {
     // Job 2 : Top K
     
 	Configuration conf2 = new Configuration();
+	
+	// Parameter
+	conf2.setInt("k", Integer.parseInt(args[2]));
 
     Job job2 = Job.getInstance(conf2, "Project");
     job2.setNumReduceTasks(1);
@@ -117,13 +58,13 @@ public class Project {
     
     // Mapper
     job2.setMapperClass(TopKMapper.class);
-    job2.setMapOutputKeyClass(Text.class);
-    job2.setMapOutputValueClass(IntWritable.class);
+    job2.setMapOutputKeyClass(NullWritable.class);
+    job2.setMapOutputValueClass(CityWritable.class);
     
     // Reducer
     job2.setReducerClass(TopKReducer.class);
-    job2.setOutputKeyClass(Text.class);
-    job2.setOutputValueClass(IntWritable.class);
+    job2.setOutputKeyClass(NullWritable.class);
+    job2.setOutputValueClass(CityWritable.class);
     
     // Format
     job2.setInputFormatClass(SequenceFileInputFormat.class);
