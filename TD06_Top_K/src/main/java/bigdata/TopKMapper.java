@@ -1,19 +1,17 @@
 package bigdata;
 
 import java.io.IOException;
-import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
 public class TopKMapper extends Mapper<NullWritable, CityWritable, NullWritable, CityWritable>{
 	
 	public int k = 0;
 
-	private TreeMap<Integer, CityWritable> treeMap  = new TreeMap<Integer, CityWritable>();
+	private TreeSet<CityWritable> treeSet  = new TreeSet<CityWritable>();
 
 	@Override
 	public void setup(Context context) {
@@ -23,16 +21,16 @@ public class TopKMapper extends Mapper<NullWritable, CityWritable, NullWritable,
 	
 	@Override
 	public void map(NullWritable key, CityWritable value, Context context) throws IOException, InterruptedException {
-		treeMap.put(value.population, value.clone());
+		treeSet.add(value.clone());
 		
-		if(treeMap.size() > k){
-			treeMap.remove(treeMap.firstKey());
+		if(treeSet.size() > k){
+			treeSet.remove(treeSet.first());
 		}
 	}
 	
 	@Override
 	protected void cleanup(Context context) throws IOException, InterruptedException {
-		for (CityWritable c : treeMap.values()){
+		for (CityWritable c : treeSet.descendingSet()){
 			context.write(NullWritable.get(), c);
 		}
 	}

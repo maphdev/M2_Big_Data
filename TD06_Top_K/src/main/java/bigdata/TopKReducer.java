@@ -1,7 +1,7 @@
 package bigdata;
 
 import java.io.IOException;
-import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.NullWritable;
@@ -12,7 +12,7 @@ public class TopKReducer extends Reducer<NullWritable, CityWritable, NullWritabl
 	
 	public int k = 0;
 
-	private TreeMap<Integer, CityWritable> treeMap  = new TreeMap<Integer, CityWritable>();
+	private TreeSet<CityWritable> treeSet  = new TreeSet<CityWritable>();
 	
 	@Override
 	public void setup(Context context) {
@@ -24,9 +24,9 @@ public class TopKReducer extends Reducer<NullWritable, CityWritable, NullWritabl
 	public void reduce(NullWritable key, Iterable<CityWritable> values, Context context) throws IOException, InterruptedException {
 		for (CityWritable c : values){
 			
-			treeMap.put(c.population, c.clone());
-			if (treeMap.size() > k){
-				treeMap.remove(treeMap.firstKey());
+			treeSet.add(c.clone());
+			if (treeSet.size() > k){
+				treeSet.remove(treeSet.first());
 			}
 		}
 	}
@@ -34,7 +34,7 @@ public class TopKReducer extends Reducer<NullWritable, CityWritable, NullWritabl
 	@Override
 	protected void cleanup(Context context) throws IOException, InterruptedException {
 		context.write(NullWritable.get(), new Text("country, city, accent city, region, population, latitude, longitude"));
-		for (CityWritable c : treeMap.descendingMap().values()){
+		for (CityWritable c : treeSet.descendingSet()){
 			context.write(NullWritable.get(), new Text(c.toString()));
 		}
 	}

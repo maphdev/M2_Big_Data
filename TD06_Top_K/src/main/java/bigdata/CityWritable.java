@@ -3,10 +3,11 @@ package bigdata;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Comparator;
 
 import org.apache.hadoop.io.Writable;
 
-public class CityWritable implements Writable {
+public class CityWritable implements Writable, Comparable<CityWritable>{
 	public String country;
 	public String city;
 	public String accentCity;
@@ -67,5 +68,19 @@ public class CityWritable implements Writable {
 	
 	public CityWritable clone(){
 		return new CityWritable(country, city, accentCity, region, population, latitude, longitude);
+	}
+
+	public int compareTo(CityWritable o) {
+		if ((this.city).equals(o.city) && (this.country).equals(o.country)){
+			return 0;
+		}
+		int res = this.population - o.population;
+		if (res == 0){
+			res = city.compareTo(o.city);
+			if (res == 0){
+				res = (this.country).compareTo(o.country);
+			}
+		}
+		return res;
 	}
 }
